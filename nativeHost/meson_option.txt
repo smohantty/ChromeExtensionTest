@@ -1,0 +1,2 @@
+[options]
+prefix = /usr/local

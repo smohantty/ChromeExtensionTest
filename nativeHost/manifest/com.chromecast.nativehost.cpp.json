@@ -1,0 +1,10 @@
+{
+    "name": "com.chromecast.nativehost.cpp",
+    "description": "Native Messaging Host Example",
+    "path": "/usr/local/bin/ChromecastNativeHostCpp",
+    "type": "stdio",
+    "allowed_origins": [
+      "chrome-extension://cagpjoeejopjjmdgadlcfkdklincnkhe/"
+    ]
+  }
+  

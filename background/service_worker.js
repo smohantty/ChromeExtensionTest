@@ -6,7 +6,11 @@ let tabId;
 self.addEventListener('install', event => {
   event.waitUntil(
     establishNativeHostConnection()
-      .then(() => console.log('Native host connection established during installation'))
+      .then(() => {
+        console.log('Native host connection established during installation')
+        // Send a ping event as soon as the connection is established
+        sendPingEvent();
+      })
       .catch(error => console.error('Error establishing native host connection during installation:', error))
   );
 });
@@ -35,7 +39,7 @@ async function establishNativeHostConnection() {
 
   return new Promise((resolve, reject) => {
     // Attempt to connect to the native messaging host
-    nativeHostPort = chrome.runtime.connectNative('com.suv.service');
+    nativeHostPort = chrome.runtime.connectNative('com.chromecast.nativehost.cpp');
 
     // Listen for messages from the native messaging host
     nativeHostPort.onMessage.addListener(async msg => {
@@ -112,4 +116,22 @@ async function sendTabInfoRequest() {
       }
     });
   });
+}
+
+async function sendPingEvent() {
+  try {
+    // Send a ping event to the native host
+    await new Promise((resolve, reject) => {
+      nativeHostPort.postMessage({ action: 'ping' }, () => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+    console.log('Ping event sent to native host');
+  } catch (error) {
+    console.error('Error sending ping event to native host:', error);
+  }
 }
