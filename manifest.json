@@ -5,7 +5,8 @@
     "description": "Testing chrome extension for native host messaging",
     "permissions": [
       "tabs",
-      "nativeMessaging"
+      "nativeMessaging",
+      "activeTab"
     ],
     "background": {
       "service_worker": "background/service_worker.js"

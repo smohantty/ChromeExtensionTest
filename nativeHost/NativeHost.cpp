@@ -8,6 +8,11 @@
 #include <stdexcept>
 #include <csignal>
 
+#define JSON_NO_IO
+#include "json.hpp"
+
+using json = nlohmann::json;
+
 class NativeMessagingHost {
 public:
     NativeMessagingHost() : stopRequested(false) {
@@ -83,14 +88,20 @@ private:
     }
 
     void sendRequestInternal(const std::string& request) {
+        // Serialize the request as JSON
+        json requestJson;
+        requestJson["action"] = request;
+        std::string serializedRequest = requestJson.dump();
+
         // Send the request length
-        int request_length = request.size();
+        int request_length = serializedRequest.size();
         std::cout.write(reinterpret_cast<const char*>(&request_length), sizeof(request_length));
 
-        // Send the request
-        std::cout.write(request.c_str(), request_length);
+        // Send the serialized request
+        std::cout.write(serializedRequest.c_str(), request_length);
         std::cout.flush();
-        //logError("have sent a message to chrome extension " + std::string(request));
+
+        //logError("have sent a message to chrome extension " + std::string(serializedRequest));
     }
 
     void messageHandler() {
@@ -190,7 +201,7 @@ int main() {
         // ...
 
         // Example: Sending a request to the extension
-        nativeMessagingHost.sendRequest("This is a request from the Native Messaging host.");
+        nativeMessagingHost.sendRequest("urlInfo");
 
         // Wait for a while (for demonstration purposes)
         std::this_thread::sleep_for(std::chrono::seconds(5));

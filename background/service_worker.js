@@ -20,9 +20,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('message', async event => {
-  if (event.data.message === 'getTabInfo') {
+  if (event.data.message === 'getUrlInfo') {
     try {
-      await sendTabInfoRequest();
+      await sendUrlInfoRequest();
     } catch (error) {
       console.error('Error sending message to native host:', error);
       // If there's an error, attempt to reconnect
@@ -45,10 +45,11 @@ async function establishNativeHostConnection() {
     nativeHostPort.onMessage.addListener(async msg => {
       console.log('Message from native host:', msg);
 
-      if (msg.action === 'forwardToContentScript') {
+      if (msg.action === 'urlInfo') {
         // Forward the message to the content script of the current tab
         try {
-          await sendTabInfoRequest();
+          // Get the response from sendUrlInfoRequest
+          const urlInfoResponse = await sendUrlInfoRequest();
         } catch (error) {
           console.error('Error sending message to content script:', error);
         }
@@ -56,7 +57,7 @@ async function establishNativeHostConnection() {
         // Send the response back to the native host
         try {
           await new Promise((resolve, reject) => {
-            nativeHostPort.postMessage({ action: 'forwardResponse', data: response }, () => {
+            nativeHostPort.postMessage({ action: 'urlInfoResponse', data: urlInfoResponse }, () => {
               if (chrome.runtime.lastError) {
                 reject(new Error(chrome.runtime.lastError.message));
               } else {
@@ -90,16 +91,16 @@ async function establishNativeHostConnection() {
   });
 }
 
-async function sendTabInfoRequest() {
+async function sendUrlInfoRequest() {
   return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, async tabs => {
       if (tabs && tabs.length > 0) {
         tabId = tabs[0].id;
 
         // Send the message to the content script
         try {
           const response = await new Promise((resolve, reject) => {
-            chrome.tabs.sendMessage(tabId, { action: 'getTabInfo' }, response => {
+            chrome.tabs.sendMessage(tabId, { action: 'getUrlInfo' }, response => {
               if (chrome.runtime.lastError) {
                 reject(new Error(chrome.runtime.lastError.message));
               } else {
