@@ -1,16 +1,13 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "ChromeExtensionTest",
     "version": "1.0",
     "description": "Testing chrome extension for native host messaging",
     "permissions": [
-      "storage",
-      "activeTab",
-      "tabs",
-      "nativeMessaging"
+      "tabs"
     ],
     "background": {
-      "service_worker": "background/service-worker.js"
+      "service_worker": "background/service_worker.js"
     },
     "content_scripts": [
       {
