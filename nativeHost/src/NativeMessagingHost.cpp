@@ -18,6 +18,16 @@
 
 using json = nlohmann::json;
 
+namespace {
+    inline void logError(const std::string& errorMessage) {
+        LOG_TAGGED_ERROR(Logger::LogTag::NETIVE_MESSAGING, errorMessage);
+    }
+
+    inline void logInfo(const std::string& infoMessage) {
+        LOG_TAGGED_INFO(Logger::LogTag::NETIVE_MESSAGING, infoMessage);
+    }
+}
+
 class NativeMessagingHost::NativeMessagingHostImpl {
 public:
     NativeMessagingHostImpl() : stopRequested(false) {
@@ -124,11 +134,6 @@ private:
         std::cin.tie(nullptr);
         std::cout.tie(nullptr);
         std::cin >> std::noskipws;
-    }
-
-    // Log an error message to the log file
-    void logError(const std::string& errorMessage) {
-        LOG_TAGGED_ERROR(Logger::LogTag::NETWORK, errorMessage);
     }
 };
 

@@ -10,8 +10,8 @@ class Logger {
 public:
     // Enumeration for log levels (INFO, WARNING, ERROR)
     enum class LogLevel { INFO, WARNING, ERROR };
-    // Enumeration for log tags (GENERAL, NETWORK, FILE_IO)
-    enum class LogTag { GENERAL, NETWORK, FILE_IO };
+    // Enumeration for log tags (GENERAL, NETIVE_MESSAGING, FILE_IO)
+    enum class LogTag { GENERAL, NETIVE_MESSAGING, FILE_IO };
 
     // Convenient macros for logging with tags
 #define LOG_TAGGED_INFO(tag, message) Logger::getInstance().log(Logger::LogLevel::INFO, tag, message, __FILE__, __LINE__)
@@ -85,8 +85,8 @@ private:
         switch (tag) {
             case LogTag::GENERAL:
                 return "\x1B[36m[GENERAL]\x1B[0m";   // Cyan color for GENERAL
-            case LogTag::NETWORK:
-                return "\x1B[35m[NETWORK]\x1B[0m";   // Magenta color for NETWORK
+            case LogTag::NETIVE_MESSAGING:
+                return "\x1B[35m[NETIVE_MESSAGING]\x1B[0m";   // Magenta color for NETIVE_MESSAGING
             case LogTag::FILE_IO:
                 return "\x1B[34m[FILE_IO]\x1B[0m";   // Blue color for FILE_IO
             default:
