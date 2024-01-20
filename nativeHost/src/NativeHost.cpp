@@ -6,6 +6,7 @@
 #include <csignal>
 
 #include "NativeMessagingHost.h"
+#include "Logger.hpp"
 
 // Signal handler to gracefully stop the program on Ctrl+C
 void signalHandler(int signal) {
@@ -16,10 +17,7 @@ void signalHandler(int signal) {
     }
 }
 
-int main() {
-    // Set up signal handler for Ctrl+C
-    std::signal(SIGINT, signalHandler);
-
+void native_messaging_test() {
     auto& nativeMessagingHost = NativeMessagingHost::getInstance();
     nativeMessagingHost.start();
 
@@ -34,6 +32,25 @@ int main() {
             // response timeout
         }
     }
+}
+
+void logger_test() {
+     LOG_TAGGED_ERROR(Logger::LogTag::NETIVE_MESSAGING, "error message test");
+     LOG_TAGGED_INFO(Logger::LogTag::NETIVE_MESSAGING, "info message test");
+     LOG_TAGGED_WARNING(Logger::LogTag::NETIVE_MESSAGING, "info message test");
+
+     LOG_TAGGED_ERROR(Logger::LogTag::GENERAL, "error message test");
+     LOG_TAGGED_INFO(Logger::LogTag::GENERAL, "info message test");
+     LOG_TAGGED_WARNING(Logger::LogTag::GENERAL, "info message test");     
+
+}
+
+int main() {
+    // Set up signal handler for Ctrl+C
+    std::signal(SIGINT, signalHandler);
+
+    //native_messaging_test();
+    logger_test();
 
     return 0;
 }
