@@ -22,7 +22,7 @@ public:
     std::optional<std::string> readResponse(std::chrono::milliseconds timeout = READ_RESPONSE_TIMEOUT_MILLISECONDS);
     
 private:
-    static constexpr std::chrono::milliseconds READ_RESPONSE_TIMEOUT_MILLISECONDS = std::chrono::milliseconds(500);
+    static constexpr std::chrono::milliseconds READ_RESPONSE_TIMEOUT_MILLISECONDS = std::chrono::milliseconds(2000);
     
     // Private constructor to enforce singleton pattern
     NativeMessagingHost();

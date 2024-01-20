@@ -114,10 +114,6 @@ public:
         #endif
     }
 
-    void onReceiveData(std::function<void(const nlohmann::json&)> block) {
-        block = std::move(block);
-    }
-
     void start() {
 
         try {
@@ -135,8 +131,8 @@ public:
         
         stopRequested = true;
 
-        requestQueue.notifyAll();
-        messageQueue.notifyAll();
+        sendQueue.notifyAll();
+        receiveQueue.notifyAll();
 
         if (sendThread.joinable()) {
             sendThread.join();
@@ -153,6 +149,14 @@ public:
         }
     }
 
+    void sendResponse(const nlohmann::json& response) {
+        sendQueue.push(response);
+    }
+        
+    std::optional<nlohmann::json> readRequest(std::chrono::milliseconds timeout) {
+        return receiveQueue.pop(timeout);
+    }    
+
 
     ~PipeServerImpl() {
 
@@ -161,7 +165,7 @@ private:
     void sendThreadFunction() {
         while (!stopRequested) {
             try {
-                auto result = requestQueue.pop(REQUEST_QUEUE_READ_TIMEOUT_MILLISECONDS);
+                auto result = sendQueue.pop(REQUEST_QUEUE_READ_TIMEOUT_MILLISECONDS);
                 if (result.has_value()) {
                     std::string serializedData = result.value().dump();
                     mInterface->writeData(serializedData);
@@ -178,7 +182,7 @@ private:
                 auto buffer = mInterface->readData();
                 json receivedData = json::parse(buffer);
 
-                messageQueue.push(std::move(receivedData));
+                receiveQueue.push(std::move(receivedData));
 
             } catch (const std::exception& ex) {
                 logError("Exception: " + std::string(ex.what()));
@@ -192,19 +196,16 @@ private:
     std::unique_ptr<PipeServerInterface> mInterface;
     std::thread sendThread;
     std::thread receiveThread;
-    ConcurrentQueue<json> requestQueue;
-    ConcurrentQueue<json> messageQueue;    
-    std::function<void(const json&)> block;
+    ConcurrentQueue<json> sendQueue;
+    ConcurrentQueue<json> receiveQueue;    
 };
 
 PipeServer::PipeServer(const std::string& pipeName): mImpl(std::make_unique<PipeServerImpl>(pipeName)) {
 
 }
-    
-void PipeServer::onReceiveData(std::function<void(const nlohmann::json&)> block) {
-    mImpl->onReceiveData(std::move(block));
-}
 
+PipeServer::~PipeServer() = default;
+    
 void PipeServer::start() {
     mImpl->start();
 }
@@ -212,4 +213,12 @@ void PipeServer::start() {
 
 void PipeServer::stop() {
     mImpl->stop();
+}
+
+void PipeServer::sendResponse(const nlohmann::json& request) {
+    mImpl->sendResponse(request);
+}
+    
+std::optional<nlohmann::json> PipeServer::readRequest(std::chrono::milliseconds timeout) {
+    return mImpl->readRequest(timeout);
 }

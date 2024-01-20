@@ -2,7 +2,7 @@
 #define PIPE_SERVER_H
 
 #include <memory>
-#include <functional>
+#include <optional>
 
 #include "json.hpp"
 
@@ -11,13 +11,17 @@ class PipeServerImpl;
 class PipeServer {
 public:
     PipeServer(const std::string& pipeName);
+    ~PipeServer();
     
-    void onReceiveData(std::function<void(const nlohmann::json&)> block);
+    void sendResponse(const nlohmann::json& request);
+
+    std::optional<nlohmann::json> readRequest(std::chrono::milliseconds timeout = READ_REQUEST_TIMEOUT_MILLISECONDS);
 
     void start();
     void stop();
 
 private:
+    static constexpr std::chrono::milliseconds READ_REQUEST_TIMEOUT_MILLISECONDS = std::chrono::milliseconds(2000);
     // Delete copy and move operations
     PipeServer(const PipeServer&) = delete;
     PipeServer& operator=(const PipeServer&) = delete;
