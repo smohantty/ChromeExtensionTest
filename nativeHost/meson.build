@@ -3,5 +3,5 @@ project('NativeMessagingHostCpp', 'cpp',
   default_options : ['warning_level=3',
                      'cpp_std=c++17'])
 
-NativeHostExe = executable('ChromecastNativeHostCpp', 'NativeHost.cpp',
+NativeHostExe = executable('ChromecastNativeHostCpp', 'src/NativeHost.cpp',
   install : true)
