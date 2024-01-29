@@ -93,7 +93,7 @@ void testNativeMessaging() {
             if (response.has_value()) {
                  logInfo("response: " + response.value());
             } else {
-                logError("response : {}");
+                logError("response : no response from extension ");
             }
             // Sleep for 3 seconds
             std::this_thread::sleep_for(std::chrono::seconds(3));

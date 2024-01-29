@@ -37,7 +37,7 @@ function getMeta(tag) {
          return getYoutubeMeta()
          break;  
        case "netflix":
-           return {tag}
+           return {type:tag}
          break;  
        case "og":  
            return getOgMeta()

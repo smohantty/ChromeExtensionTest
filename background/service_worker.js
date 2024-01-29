@@ -96,15 +96,21 @@ async function getTabInfoRequest() {
       if (tabs && tabs.length > 0) {
           try {
               let url = tabs[0].url
-              let tag = getTag(url)
-              sendMessageToTab(tabs[0].id, { request: "meta", tag })
-              .then(response => {
-                if (response) {
-                  resolve({ url, meta: response });
-                } else {
-                  resolve({ url });
-                }
-              })
+              if (isLocalfile(url)) {
+                resolve({file: getFilepath(url)})
+              } else if (isEmptyTab()) {
+                resolve({error:"empty tab"})
+              } else {
+                let tag = getTag(url)              
+                sendMessageToTab(tabs[0].id, { request: "meta", tag })
+                .then(response => {
+                  if (response) {
+                    resolve({ url, meta: response });
+                  } else {
+                    resolve({ url });
+                  }
+                })
+              }
           } catch(error) {
             resolve({url:tabs[0].url})
           }
@@ -125,4 +131,24 @@ function sendMessageToTab(tabId, message) {
       }
     });
   });
+}
+
+function getFilepath(url) {
+  return url.split("file://")[1]
+}
+
+function isLocalfile(url) {
+  if (url.startsWith("file://")) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function isEmptyTab(url) {
+  if(!url || url.startswith('chrome://')) {
+    return true
+  } else {
+    return false
+  }
 }
