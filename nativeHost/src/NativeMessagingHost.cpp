@@ -119,7 +119,7 @@ private:
                 std::string request = result.value();
 
                 json requestJson;
-                requestJson["action"] = request;
+                requestJson["request"] = request;
                 std::string serializedRequest = requestJson.dump();
 
                 int request_length = serializedRequest.size();

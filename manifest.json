@@ -1,22 +1,24 @@
-{
+  {
     "manifest_version": 3,
     "name": "ChromeExtensionTest",
     "version": "1.0",
     "description": "Testing chrome extension for native host messaging",
     "permissions": [
-      "tabs",
       "nativeMessaging",
-      "activeTab"
+      "webNavigation",
+      "tabs"
     ],
     "background": {
       "service_worker": "background/service_worker.js"
-    },
+    },  
     "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content/content.js"]
-      }
-    ],
+    {
+      "js": ["content/content.js"],
+      "matches": [
+        "<all_urls>"
+      ]
+  }        
+  ],
     "commands": {
       "toggle-feature": {
         "suggested_key": {

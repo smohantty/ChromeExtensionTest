@@ -19,17 +19,6 @@ self.addEventListener('activate', event => {
   // Perform activation tasks if needed
 });
 
-self.addEventListener('message', async event => {
-  if (event.data.message === 'getUrlInfo') {
-    try {
-      await sendUrlInfoRequest();
-    } catch (error) {
-      console.error('Error sending message to native host:', error);
-      // If there's an error, attempt to reconnect
-      await establishNativeHostConnection();
-    }
-  }
-});
 
 async function establishNativeHostConnection() {
   if (nativeHostPort && nativeHostPort.sender.tab) {
@@ -43,21 +32,21 @@ async function establishNativeHostConnection() {
 
     // Listen for messages from the native messaging host
     nativeHostPort.onMessage.addListener(async msg => {
-      console.log('Message from native host:', msg);
 
-      if (msg.action === 'urlInfo') {
+      if (msg.request === 'tabInfo') {
         // Forward the message to the content script of the current tab
+        tabInfoResponse = null
         try {
-          // Get the response from sendUrlInfoRequest
-          const urlInfoResponse = await sendUrlInfoRequest();
+          // Get the response from getTabInfoRequest
+          tabInfoResponse = await getTabInfoRequest();
         } catch (error) {
-          console.error('Error sending message to content script:', error);
+          tabInfoResponse = {error : "fail to message content script"}
         }
 
         // Send the response back to the native host
         try {
           await new Promise((resolve, reject) => {
-            nativeHostPort.postMessage({ action: 'urlInfoResponse', data: urlInfoResponse }, () => {
+            nativeHostPort.postMessage({ response: 'tabInfo', data: tabInfoResponse }, () => {
               if (chrome.runtime.lastError) {
                 reject(new Error(chrome.runtime.lastError.message));
               } else {
@@ -91,48 +80,49 @@ async function establishNativeHostConnection() {
   });
 }
 
-async function sendUrlInfoRequest() {
+const siteMap = {  
+  "www.youtube.com": "youtube",  
+  "www.netflix.com": "netflix"  
+};  
+
+function getTag(url){  
+  const host = new URL(url).hostname;
+  return siteMap[host] || "og";
+}  
+
+async function getTabInfoRequest() {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async tabs => {
       if (tabs && tabs.length > 0) {
-        tabId = tabs[0].id;
-
-        // Send the message to the content script
-        try {
-          const response = await new Promise((resolve, reject) => {
-            chrome.tabs.sendMessage(tabId, { action: 'getUrlInfo' }, response => {
-              if (chrome.runtime.lastError) {
-                reject(new Error(chrome.runtime.lastError.message));
-              } else {
-                resolve(response);
-              }
-            });
-          });
-          resolve(response);
-        } catch (error) {
-          reject(error);
-        }
+          try {
+              let url = tabs[0].url
+              let tag = getTag(url)
+              sendMessageToTab(tabs[0].id, { request: "meta", tag })
+              .then(response => {
+                if (response) {
+                  resolve({ url, meta: response });
+                } else {
+                  resolve({ url });
+                }
+              })
+          } catch(error) {
+            resolve({url:tabs[0].url})
+          }
       } else {
-        reject(new Error('Error querying tabs: No active tabs found.'));
+        resolve({error: "No active tabs found"})
       }
     });
   });
 }
 
-async function sendPingEvent() {
-  try {
-    // Send a ping event to the native host
-    await new Promise((resolve, reject) => {
-      nativeHostPort.postMessage({ action: 'ping' }, () => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-        } else {
-          resolve();
-        }
-      });
+function sendMessageToTab(tabId, message) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, message, null, response => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(response);
+      }
     });
-    console.log('Ping event sent to native host');
-  } catch (error) {
-    console.error('Error sending ping event to native host:', error);
-  }
+  });
 }
