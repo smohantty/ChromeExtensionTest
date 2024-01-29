@@ -26,7 +26,7 @@ function fetchMeta(tag) {
       // Resolve the Promise with the result (e.g., meta data)
       const meta = getMeta(tag);
       resolve(meta);
-    }, 1000); // Simulated delay of 1 second
+    }, 10); // Simulated delay of 10ms
   });
 }
 
