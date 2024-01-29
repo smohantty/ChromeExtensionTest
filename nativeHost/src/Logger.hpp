@@ -88,7 +88,7 @@ private:
             case LogTag::NETIVE_MESSAGING:
                 return "\x1B[35m[NETIVE_MESSAGING]\x1B[0m";   // Magenta color for NETIVE_MESSAGING
             case LogTag::PIPE_SERVER:
-                return "\x1B[34m[FILE_IO]\x1B[0m";   // Blue color for PIPE_SERVER
+                return "\x1B[34m[PIPE_SERVER]\x1B[0m";   // Blue color for PIPE_SERVER
             default:
                 return "[UNKNOWN]";
         }

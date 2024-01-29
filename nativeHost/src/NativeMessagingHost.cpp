@@ -49,7 +49,7 @@ public:
 
     void stop() {
         stopRequested = true;
-
+        logInfo("STOP start");
         requestQueue.notifyAll();
         messageQueue.notifyAll();
 
@@ -60,6 +60,8 @@ public:
         if (writeThread.joinable()) {
             writeThread.join();
         }
+        
+        logInfo("STOP end");
 
     }
 

@@ -56,6 +56,12 @@ public:
     LinuxPipeServer(const std::string& pipeName) : PipeServerInterface(), pipeName(pipeName), fd(0) {}
 
     void start() override {
+        
+        // Attempt to unlink the named pipe first
+        if (unlink(pipeName.c_str()) == -1 && errno != ENOENT) {
+            throw std::runtime_error("Error unlinking existing named pipe: " + std::string(strerror(errno)));
+        }
+
         if (mkfifo(pipeName.c_str(), 0666) == -1) {
             throw std::runtime_error("Error creating named pipe '" + pipeName + "': " + std::string(strerror(errno)));
         }
@@ -128,7 +134,7 @@ public:
     }
 
     void stop() {
-        
+        logInfo("STOP start");
         stopRequested = true;
 
         sendQueue.notifyAll();
@@ -147,6 +153,8 @@ public:
         } catch (const std::exception& ex) {
             logError("Exception: " + std::string(ex.what()));
         }
+
+        logInfo("STOP end");
     }
 
     void sendResponse(const nlohmann::json& response) {

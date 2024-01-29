@@ -3,12 +3,23 @@
 #include <csignal>
 #include <atomic>
 #include <optional>
+#include <thread>
+#include <chrono>
 
 #include "NativeMessagingHost.h"
 #include "PipeServer.h"
 #include "Logger.hpp"
 #include "json.hpp"
 
+namespace {
+    inline void logError(const std::string& errorMessage) {
+        LOG_TAGGED_ERROR(Logger::LogTag::GENERAL, errorMessage);
+    }
+
+    inline void logInfo(const std::string& infoMessage) {
+        LOG_TAGGED_INFO(Logger::LogTag::GENERAL, infoMessage);
+    }
+}
 
 class NativeHostServer {
 public:
@@ -19,6 +30,9 @@ public:
     }
 
     void run(std::string serverName) {
+        
+        logInfo( "NativeHostServer::run START");
+
         server = std::make_unique<PipeServer>(serverName);
         server->start();
         auto& nativeMessagingHost = NativeMessagingHost::getInstance();
@@ -47,6 +61,7 @@ public:
                 }
 
             } else {
+                logInfo( "server->readRequest()  timeout");
                 // pipe server response timeout
             }
         }
@@ -69,6 +84,22 @@ private:
     std::unique_ptr<PipeServer> server;
 };
 
+void testNativeMessaging() {
+        auto& nativeMessagingHost = NativeMessagingHost::getInstance();
+        nativeMessagingHost.start();
+        while(true) {
+            nativeMessagingHost.sendRequest("tabInfo");
+            auto response = nativeMessagingHost.readResponse();
+            if (response.has_value()) {
+                 logInfo("response: " + response.value());
+            } else {
+                logError("response : {}");
+            }
+            // Sleep for 3 seconds
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+        } 
+}
+
 
 // Signal handler to gracefully stop the program on Ctrl+C
 void signalHandler(int signal) {
@@ -81,10 +112,13 @@ void signalHandler(int signal) {
 
 
 int main() {
-    // Set up signal handler for Ctrl+C
-    std::signal(SIGINT, signalHandler);
+    testNativeMessaging();
+    // // Set up signal handler for Ctrl+C
+    // std::signal(SIGINT, signalHandler);
 
-    NativeHostServer::getInstance().run("com.snapcast.chrome.nativehost.service");
+    // logInfo("Main Called");
+
+    // NativeHostServer::getInstance().run("com.snapcast.chrome.nativehost.service");
 
     return 0;
 }

@@ -48,7 +48,12 @@ public:
         std::unique_lock<std::mutex> lock(mutex_);
 
         // Wait for the condition to be true or until the timeout expires
-        if (condition_.wait_for(lock, timeout, [this] { return !queue_.empty(); })) {
+        if (condition_.wait_for(lock, timeout, [this] { return done_ || !queue_.empty(); })) {
+            
+            if (done_) {
+                return std::nullopt;
+            }
+            
             // The condition was met within the specified timeout
             T value = queue_.front();
             queue_.pop();
@@ -63,10 +68,15 @@ public:
     }
 
     void notifyAll() {
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            done_ = true;
+        }
         condition_.notify_all();
     }
 
 private:
+    bool          done_{false};
     std::queue<T> queue_;              // The underlying queue
     std::mutex mutex_;                 // Mutex to protect access to the queue
     std::condition_variable condition_; // Condition variable for signaling changes in the queue
