@@ -58,8 +58,8 @@ function getOgMeta() {
        getMetaProperty('og:type', json, 'genre')
        getMetaProperty('og:article:author', json, 'author')
        getMetaProperty('og:url', json, 'url')
-   } catch {
-       console.log("getOgMeta Error : " + error)
+   } catch(error) {
+      json['error'] = error
    }
    return json
 }
@@ -85,14 +85,10 @@ function getMetaTag(id, json, key) {
 }
 
 function getMetaProperty(id, json, key) {
-   try {
-       var metaProperty = document.querySelector("meta[property='" + id + "']");  
-       if (metaProperty) {
-           json[key] = metaProperty.getAttribute('content')
-       }
-   } catch (error) {
-       console.log("getOgMeta Error : " + error)
-   }
+  var metaProperty = document.querySelector("meta[property='" + id + "']");  
+  if (metaProperty) {
+      json[key] = metaProperty.getAttribute('content')
+  }
 }
 
 

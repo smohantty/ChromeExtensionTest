@@ -42,7 +42,7 @@ async function establishNativeHostConnection() {
         } catch (error) {
           tabInfoResponse = {error : "fail to message content script"}
         }
-
+        
         // Send the response back to the native host
         try {
           await new Promise((resolve, reject) => {
@@ -98,7 +98,7 @@ async function getTabInfoRequest() {
               let url = tabs[0].url
               if (isLocalfile(url)) {
                 resolve({file: getFilepath(url)})
-              } else if (isEmptyTab()) {
+              } else if (isEmptyTab(url)) {
                 resolve({error:"empty tab"})
               } else {
                 let tag = getTag(url)              
@@ -146,7 +146,7 @@ function isLocalfile(url) {
 }
 
 function isEmptyTab(url) {
-  if(!url || url.startswith('chrome://')) {
+  if(url.startsWith("chrome://")) {
     return true
   } else {
     return false
