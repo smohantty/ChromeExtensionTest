@@ -8,8 +8,6 @@ self.addEventListener('install', event => {
     establishNativeHostConnection()
       .then(() => {
         console.log('Native host connection established during installation')
-        // Send a ping event as soon as the connection is established
-        sendPingEvent();
       })
       .catch(error => console.error('Error establishing native host connection during installation:', error))
   );
